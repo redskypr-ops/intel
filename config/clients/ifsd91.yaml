@@ -1,0 +1,71 @@
+# Idaho Falls School District 91 — first proof-of-concept client for the
+# Red Sky Intelligence Pipeline. Real-time alerting (not digest-only): the
+# June 2026 no-confidence petition against Superintendent Karla LaOrange is
+# an actively unfolding situation.
+#
+# notion_client_page_id is intentionally left blank: IFSD91 does not yet
+# exist as a row in the Notion Clients DB (checked 2026-07-06). Add it there
+# and paste the page ID below before this client's Signals can be linked via
+# the Client(s) relation — see docs/SETUP.md. The pipeline still runs and
+# writes Signals without it; only the relation is skipped.
+
+client: "Idaho Falls School District 91"
+notion_client_page_id: null
+
+contacts:
+  - "Karla LaOrange"
+  - "Hillary Radcliffe"
+  - "Idaho Falls School District 91"
+  - "District 91"
+  - "IFSD91"
+
+sources:
+  # Confirmed live 2026-07-06: private channel, created by Chad the day
+  # before this config was written. The pipeline's Slack app/bot (see
+  # docs/SETUP.md) must be invited separately from the interactive
+  # claude.ai connector Chad uses day-to-day.
+  muckrack_slack_channel: "#ifsd91-firehose"
+  slack_channel_id: "C0BFDPWBUTE"
+
+  tveyes_saved_search: "needs creating in TVEyes"
+
+  # Boolean queries for reference only — Chad creates these as actual Google
+  # Alerts with RSS delivery, then the resulting feed URLs go under
+  # google_alert_feeds below.
+  google_alerts:
+    - '"Karla LaOrange"'
+    - '"Idaho Falls School District 91" OR "District 91" superintendent'
+    - '"Idaho Falls Education Association" negotiations OR mediation'
+    - '"Hillary Radcliffe" Idaho Falls'
+  google_alert_feeds: []
+
+  reddit_keywords:
+    - "Karla LaOrange"
+    - "Idaho Falls School District"
+    - "District 91"
+
+  social_handles:
+    - "Change.org petition tracker"
+    - "X keyword search"
+
+  direct_rss:
+    - "https://www.eastidahonews.com/feed/"
+    # idahoednews.org likely has RSS — verify before relying on it
+    # - "https://www.idahoednews.org/feed/"
+
+output_channel_id: "C0BFDPWBUTE"
+
+risk_keywords:
+  - "vote of no confidence"
+  - "resign"
+  - "resignation"
+  - "termination"
+  - "buyout"
+  - "special meeting"
+  - "board vote"
+  - "contract non-renewal"
+
+topic_tags:
+  - "Governance & Leadership"
+  - "Crisis/Reputation"
+  - "Education & EdTech"

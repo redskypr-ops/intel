@@ -1,0 +1,58 @@
+name: Intelligence Pipeline
+
+on:
+  schedule:
+    # Ingest/filter/enrich/alert every 30 minutes.
+    - cron: "*/30 * * * *"
+    # Digest at 8am and 4pm MT (14:00 and 22:00 UTC, ignoring DST).
+    - cron: "0 14,22 * * *"
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Which job to run manually"
+        required: true
+        default: "ingest"
+        type: choice
+        options: ["ingest", "digest"]
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    if: github.event.schedule == '*/30 * * * *' || github.event.inputs.job == 'ingest'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Run ingest
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m pipeline.run_ingest
+      - name: Commit updated Slack cursor state
+        run: |
+          git config user.name "redsky-intel-bot"
+          git config user.email "actions@github.com"
+          git add state/slack_cursors.json
+          git diff --cached --quiet || git commit -m "Update Slack ingest cursors [skip ci]"
+          git push
+
+  digest:
+    if: github.event.schedule == '0 14,22 * * *' || github.event.inputs.job == 'digest'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Run digest
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+        run: python -m pipeline.run_digest
